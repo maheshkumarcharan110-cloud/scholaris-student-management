@@ -19,6 +19,18 @@ export function formatDate(value?: string | Date | null, pattern = "d MMM yyyy")
   if (!value) return "—";
   const date = typeof value === "string" ? parseISO(value) : value;
   if (Number.isNaN(date.getTime())) return "—";
+
+  // Date-only values are stored at UTC midnight. Format a local-noon surrogate
+  // so the calendar date stays stable in timezones behind UTC.
+  const isUtcMidnight =
+    date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0;
+  if (isUtcMidnight) {
+    return format(
+      new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 12),
+      pattern,
+    );
+  }
+
   return format(date, pattern);
 }
 
