@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper font-sans text-ink-900 antialiased;
+    font-feature-settings: "ss01" 1, "cv11" 1;
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-ink-950;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme("colors.marigold.400");
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: theme("colors.marigold.200");
+    color: theme("colors.ink.950");
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .cut-card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-400;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink-700;
+  }
+
+  .text-input {
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 transition-shadow duration-150 focus:border-ink-300 focus:outline-none focus:ring-4 focus:ring-ink-900/5 disabled:cursor-not-allowed disabled:bg-paper disabled:text-ink-400;
+  }
+
+  .text-input-error {
+    @apply border-clay-300 focus:border-clay-400 focus:ring-clay-500/10;
+  }
+
+  .data-table {
+    @apply w-full min-w-[640px] border-collapse text-left text-sm;
+  }
+
+  .data-table thead th {
+    @apply border-b border-line bg-paper/60 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-400 first:pl-5 last:pr-5;
+  }
+
+  .data-table tbody td {
+    @apply border-b border-line/70 px-4 py-3.5 align-middle first:pl-5 last:pr-5;
+  }
+
+  .data-table tbody tr {
+    @apply transition-colors hover:bg-paper/50;
+  }
+
+  .data-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .table-shell {
+    @apply overflow-x-auto rounded-2xl border border-line bg-surface shadow-card;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-ink-100/80;
+  }
+
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: theme("colors.ink.200") transparent;
+  }
+
+  .nav-link {
+    @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-100/70 transition-all duration-150 hover:bg-white/[0.06] hover:text-white;
+  }
+
+  .nav-link-active {
+    @apply bg-white/[0.09] text-white shadow-inset;
+  }
+
+  .nav-link-active::before {
+    content: "";
+    @apply absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-marigold-400;
+  }
+
+  .paper-grid {
+    background-image:
+      linear-gradient(rgba(16, 31, 51, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16, 31, 51, 0.045) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .ink-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .ring-progress {
+    background: conic-gradient(
+      theme("colors.marigold.400") var(--progress, 0%),
+      theme("colors.ink.100") var(--progress, 0%)
+    );
+  }
+
+  .print-only {
+    display: none;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .bg-radial-fade {
+    background-image: radial-gradient(circle at 30% 20%, rgba(228, 168, 61, 0.13), transparent 55%);
+  }
+}
+
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  body {
+    background: white !important;
+    font-size: 12px;
+  }
+
+  .no-print,
+  aside,
+  header,
+  nav,
+  button {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-area {
+    display: block !important;
+  }
+
+  .cut-card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .lg\:pl-\[268px\] {
+    padding-left: 0 !important;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}
