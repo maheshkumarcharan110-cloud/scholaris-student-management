@@ -1,6 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const ADMIN = { email: "admin@scholaris.edu", password: "Admin@12345" };
+if (!process.env.ADMIN_PASSWORD) {
+  throw new Error("ADMIN_PASSWORD is missing. Add it to server/.env before running Playwright.");
+}
+
+const ADMIN = {
+  email: process.env.ADMIN_EMAIL ?? "admin@scholaris.edu",
+  password: process.env.ADMIN_PASSWORD,
+};
+const ADMIN_NAME = process.env.ADMIN_NAME ?? "Mahesh Kumar";
+const ADMIN_FIRST_NAME = ADMIN_NAME.split(" ")[0];
 const TEACHER = { email: "priya.sharma@scholaris.edu", password: "Teacher@12345" };
 
 async function signIn(page: Page, credentials: { email: string; password: string }, firstName: string) {
@@ -13,11 +22,24 @@ async function signIn(page: Page, credentials: { email: string; password: string
   await expect(page.getByRole("heading", { name: new RegExp(firstName) })).toBeVisible();
 }
 
+async function expectNoHorizontalOverflow(page: Page) {
+  const result = await page.evaluate(() => ({
+    scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+    clientWidth: document.documentElement.clientWidth,
+  }));
+  expect(
+    result.scrollWidth,
+    `page should not overflow horizontally (${result.scrollWidth} > ${result.clientWidth})`,
+  ).toBeLessThanOrEqual(result.clientWidth + 1);
+}
+
 test.describe("administrator journey", () => {
-  test("signs in, tours every workspace page, and signs out", async ({ page }) => {
-    await signIn(page, ADMIN, "Ananya");
+  test("shows Mahesh Kumar as Super Administrator and tours every workspace page", async ({ page }) => {
+    await signIn(page, ADMIN, ADMIN_FIRST_NAME);
     const main = page.getByRole("main");
 
+    await expect(main.getByText("Super Administrator", { exact: true }).first()).toBeVisible();
+    await expect(main.getByText(ADMIN_NAME, { exact: true }).first()).toBeVisible();
     await expect(main.getByText("Active students", { exact: true })).toBeVisible();
     await expect(main.getByText("Attendance pulse")).toBeVisible();
 
@@ -51,6 +73,12 @@ test.describe("administrator journey", () => {
     await expect(main.getByRole("heading", { name: "Reports", exact: true })).toBeVisible();
     await expect(main.getByRole("tab", { name: "Attendance" })).toBeVisible();
 
+    await page.getByRole("link", { name: "My profile", exact: true }).click();
+    await expect(main.getByRole("heading", { name: "Administrator profile" })).toBeVisible();
+    await expect(main.getByText(ADMIN_NAME, { exact: true }).first()).toBeVisible();
+    await expect(main.getByText("Super Administrator", { exact: true }).first()).toBeVisible();
+    await expect(page.getByLabel(/^Current password/)).toBeVisible();
+
     await page.getByRole("link", { name: "Settings", exact: true }).click();
     await expect(main.getByRole("heading", { name: "Settings", exact: true })).toBeVisible();
     await expect(page.getByLabel(/^Current password/)).toBeVisible();
@@ -68,6 +96,7 @@ test.describe("teacher permissions", () => {
     const main = page.getByRole("main");
 
     await expect(page.getByRole("link", { name: "Teachers", exact: true })).toHaveCount(0);
+    await expect(main.getByText("Teacher", { exact: true }).first()).toBeVisible();
 
     await page.goto("/teachers");
     await expect(page).toHaveURL(/\/$/);
@@ -75,16 +104,102 @@ test.describe("teacher permissions", () => {
   });
 });
 
+test.describe("dark and light mode", () => {
+  test("toggles, persists after refresh, and works on the login page", async ({ page }) => {
+    await page.goto("/login");
+    await page.evaluate(() => localStorage.setItem("scholaris-theme", "light"));
+    await page.reload();
+
+    const html = page.locator("html");
+    await expect(html).not.toHaveClass(/dark/);
+    await expect(page.getByRole("button", { name: "Switch to dark mode" })).toBeVisible();
+    await page.getByRole("button", { name: "Switch to dark mode" }).click();
+    await expect(html).toHaveClass(/dark/);
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("scholaris-theme")))
+      .toBe("dark");
+    await page.reload();
+    await expect(html).toHaveClass(/dark/);
+    await expect(page.getByRole("button", { name: "Switch to light mode" })).toBeVisible();
+
+    await signIn(page, ADMIN, ADMIN_FIRST_NAME);
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.getByRole("button", { name: "Switch to light mode" }).click();
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("scholaris-theme")))
+      .toBe("light");
+    await page.reload();
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
+  });
+
+  test("renders every page in both themes without horizontal overflow", async ({ page }) => {
+    await signIn(page, ADMIN, ADMIN_FIRST_NAME);
+    const routes = [
+      "/",
+      "/students",
+      "/attendance",
+      "/classes",
+      "/exams",
+      "/reports",
+      "/profile",
+      "/settings",
+    ];
+
+    for (const theme of ["light", "dark"] as const) {
+      await page.evaluate((value) => localStorage.setItem("scholaris-theme", value), theme);
+      await page.reload();
+      if (theme === "dark") {
+        await expect(page.locator("html")).toHaveClass(/dark/);
+      } else {
+        await expect(page.locator("html")).not.toHaveClass(/dark/);
+      }
+      for (const route of routes) {
+        await page.goto(route);
+        await page.waitForLoadState("networkidle");
+        await expectNoHorizontalOverflow(page);
+      }
+    }
+  });
+});
+
 test.describe("responsive layout", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("offers a mobile navigation drawer and a usable dashboard", async ({ page }) => {
-    await signIn(page, ADMIN, "Ananya");
+  test("offers a mobile navigation drawer, usable tables, and forms that fit", async ({ page }) => {
+    await signIn(page, ADMIN, ADMIN_FIRST_NAME);
+    await expectNoHorizontalOverflow(page);
 
     await expect(page.getByRole("button", { name: "Open navigation" })).toBeVisible();
     await page.getByRole("button", { name: "Open navigation" }).click();
     await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
     await page.getByRole("link", { name: "Students", exact: true }).click();
     await expect(page.getByRole("main").getByRole("heading", { name: "Students", exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole("button", { name: /Add student/i }).first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    expect(box?.width ?? 0).toBeLessThanOrEqual(390);
+    await page.getByRole("button", { name: "Cancel" }).click();
+
+    await page.goto("/attendance");
+    await expectNoHorizontalOverflow(page);
+    await page.goto("/profile");
+    await expect(page.getByRole("main").getByRole("heading", { name: "Administrator profile" })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test("keeps tablet layouts usable", async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await signIn(page, ADMIN, ADMIN_FIRST_NAME);
+    await expect(page.getByRole("button", { name: "Open navigation" })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    for (const route of ["/students", "/classes", "/exams", "/reports"]) {
+      await page.goto(route);
+      await expectNoHorizontalOverflow(page);
+    }
   });
 });

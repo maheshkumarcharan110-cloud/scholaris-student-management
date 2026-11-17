@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db.js";
 import { AUTH_COOKIE, verifyToken } from "../lib/auth.js";
 import { ApiError, asyncHandler } from "../lib/http.js";
+import { isAdminRole, type AppRole } from "../lib/roles.js";
 
 export const authenticate = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
@@ -42,7 +43,7 @@ export const authenticate = asyncHandler(
   },
 );
 
-export function requireRole(...roles: Array<"ADMIN" | "TEACHER">) {
+export function requireRole(...roles: AppRole[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {
       next(new ApiError(401, "Please sign in to continue."));
@@ -55,3 +56,16 @@ export function requireRole(...roles: Array<"ADMIN" | "TEACHER">) {
     next();
   };
 }
+
+/** Guards administrator-only routes for both SUPER_ADMIN and legacy ADMIN accounts. */
+export const requireAdmin = (req: Request, _res: Response, next: NextFunction) => {
+  if (!req.user) {
+    next(new ApiError(401, "Please sign in to continue."));
+    return;
+  }
+  if (!isAdminRole(req.user.role)) {
+    next(new ApiError(403, "You do not have permission to perform this action."));
+    return;
+  }
+  next();
+};

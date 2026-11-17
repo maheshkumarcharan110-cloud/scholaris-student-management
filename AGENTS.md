@@ -25,13 +25,12 @@ export PATH=/home/mahesh/.local/node-v24.22.3-linux-x64/bin:$PATH
 
 Playwright uses installed Google Chrome via `channel: "chrome"`; see README for the Chromium alternative.
 
-## Git is rooted above this directory
+## Git
 
-- This is **not** its own git repo. The enclosing repo root is `/home/mahesh` (the "Portfolio" repo), which tracks only `README.md`.
-- `git status` run here reports the entire home directory, including personal data such as `.ssh/`, `.config/`, `.cache/`, and shell history.
-- Never run `git add -A`, `git add .`, or `git commit -a` from here — they stage everything in the home directory. Stage explicit paths only.
-- If this should be a standalone project, run `git init` here instead of relying on the home repo.
-- `/home/mahesh/.git/config` embeds a GitHub token in the `origin` URL. Never print `git config`, `git remote -v`, or `.git/config` contents to chat.
+- This project is its own git repository rooted at the current directory (`new_project`).
+- Still stage explicit paths rather than `git add -A`, and never commit `server/.env`, SQLite files, `server/.admin-credentials`, or test output.
+- Never print `git config`, `git remote -v`, or `.git/config` contents to chat: remotes may embed credentials.
+- The enclosing `/home/mahesh` directory is a separate "Portfolio" repo; do not stage files from it.
 
 ## Siblings
 

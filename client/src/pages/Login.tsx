@@ -18,6 +18,7 @@ import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
 import { getErrorMessage } from "@/lib/utils";
 import { Button, Field, Input, Spinner } from "@/components/ui";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { FullScreenLoader } from "@/components/auth-gate";
 
 const loginSchema = z.object({
@@ -27,10 +28,13 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-const demoAccounts = [
-  { label: "Administrator", email: "admin@scholaris.edu", password: "Admin@12345" },
-  { label: "Teacher", email: "priya.sharma@scholaris.edu", password: "Teacher@12345" },
-];
+// Administrator credentials are never shipped to the browser. The demo helper is
+// limited to the seeded teacher account and only appears in development (or when
+// VITE_SHOW_DEMO_ACCOUNTS=true is explicitly set).
+const demoAccounts =
+  import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === "true"
+    ? [{ label: "Teacher", email: "priya.sharma@scholaris.edu", password: "Teacher@12345" }]
+    : [];
 
 export default function LoginPage() {
   const { user, isLoading, login } = useAuth();
@@ -184,6 +188,9 @@ export default function LoginPage() {
       {/* Form panel */}
       <section className="relative flex min-h-screen flex-col justify-center px-5 py-10 sm:px-10 lg:min-h-0 lg:px-12 xl:px-20">
         <div className="pointer-events-none absolute inset-0 bg-radial-fade lg:hidden" aria-hidden="true" />
+        <div className="absolute right-5 top-5 z-10 sm:right-8 sm:top-7">
+          <ThemeToggle showLabel />
+        </div>
 
         <div className="relative mx-auto w-full max-w-[420px]">
           <div className="mb-9 flex items-center gap-3 lg:hidden">
@@ -260,36 +267,39 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-7 rounded-xl border border-line bg-surface p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
-                Demo access
+          {demoAccounts.length ? (
+            <div className="mt-7 rounded-xl border border-line bg-surface p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                  Demo access
+                </p>
+                <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-medium text-ink-400">
+                  Seeded teacher
+                </span>
+              </div>
+              <p className="mt-1.5 text-[12px] leading-5 text-ink-400">
+                Fill in the demo teacher account, then sign in. Administrator credentials are
+                configured privately on the server.
               </p>
-              <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-medium text-ink-400">
-                Seeded accounts
-              </span>
+              <div className="mt-3 grid gap-2">
+                {demoAccounts.map((account) => (
+                  <button
+                    key={account.label}
+                    type="button"
+                    onClick={() => fillDemo(account.email, account.password)}
+                    className="rounded-lg border border-line bg-white px-3 py-2.5 text-left transition hover:border-ink-200 hover:bg-paper/60"
+                  >
+                    <span className="block text-[12px] font-semibold text-ink-800">{account.label}</span>
+                    <span className="mt-0.5 block truncate text-[10px] text-ink-400">{account.email}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="mt-1.5 text-[12px] leading-5 text-ink-400">
-              Choose a role to fill in the demo credentials, then sign in.
-            </p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {demoAccounts.map((account) => (
-                <button
-                  key={account.label}
-                  type="button"
-                  onClick={() => fillDemo(account.email, account.password)}
-                  className="rounded-lg border border-line bg-white px-3 py-2.5 text-left transition hover:border-ink-200 hover:bg-paper/60"
-                >
-                  <span className="block text-[12px] font-semibold text-ink-800">{account.label}</span>
-                  <span className="mt-0.5 block truncate text-[10px] text-ink-400">{account.email}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          ) : null}
 
           <p className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-ink-400">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Need access? Contact your school administrator.
+            Administrator access is provisioned securely on the server.
           </p>
         </div>
       </section>

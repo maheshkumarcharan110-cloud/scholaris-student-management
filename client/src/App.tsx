@@ -11,6 +11,7 @@ import AttendancePage from "@/pages/Attendance";
 import ExamsPage from "@/pages/Exams";
 import ExamDetailPage from "@/pages/ExamDetail";
 import ReportsPage from "@/pages/Reports";
+import ProfilePage from "@/pages/Profile";
 import SettingsPage from "@/pages/Settings";
 import NotFoundPage from "@/pages/NotFound";
 
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="exams" element={<ExamsPage />} />
           <Route path="exams/:id" element={<ExamDetailPage />} />
           <Route path="reports" element={<ReportsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="404" element={<NotFoundPage />} />
           <Route path="*" element={<NotFoundPage />} />

@@ -1,0 +1,41 @@
+# Render blueprint for a single-service Scholaris deployment.
+#
+# IMPORTANT: this blueprint mounts a persistent disk so the SQLite database
+# survives restarts. Persistent disks require a paid instance type. Nothing is
+# purchased automatically — review the cost and approve it before deploying.
+# For a no-cost deployment, use a managed PostgreSQL database instead and drop
+# the `disk` block (SQLite on an ephemeral filesystem loses data on redeploy).
+services:
+  - type: web
+    name: scholaris
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: false
+    disk:
+      name: scholaris-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        value: file:/data/scholaris.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: COOKIE_SECURE
+        value: "true"
+      # Replace with the final HTTPS origin after the service is created.
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: ADMIN_NAME
+        value: Mahesh Kumar
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

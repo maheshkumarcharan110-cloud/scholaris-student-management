@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
+import { isAdminRole } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 export function FullScreenLoader({ label = "Opening your workspace…" }: { label?: string }) {
@@ -29,6 +30,6 @@ export function ProtectedRoute() {
 
 export function AdminRoute({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  if (user?.role !== "ADMIN") return <Navigate to="/" replace />;
+  if (!isAdminRole(user?.role)) return <Navigate to="/" replace />;
   return <>{children}</>;
 }

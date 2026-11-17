@@ -6,7 +6,8 @@ import { parseDateKey } from "../lib/dates.js";
 import { buildExamResults } from "../lib/results.js";
 import { round } from "../lib/grades.js";
 import { examCreateSchema, examUpdateSchema, marksBulkSchema } from "../schemas.js";
-import { requireRole } from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/auth.js";
+import { isAdminRole } from "../lib/roles.js";
 
 export const examsRouter = Router();
 
@@ -103,7 +104,7 @@ examsRouter.get(
     const marks = await prisma.mark.findMany({ where: { examId: exam.id } });
 
     const canEdit =
-      req.user!.role === "ADMIN" ||
+      isAdminRole(req.user!.role) ||
       exam.subjects.some(
         (item) => item.subject.teacherId && item.subject.teacherId === req.user!.teacherId,
       );
@@ -115,7 +116,7 @@ examsRouter.get(
         marks,
         canEdit,
         mySubjectIds:
-          req.user!.role === "ADMIN"
+          isAdminRole(req.user!.role)
             ? exam.subjects.map((item) => item.subjectId)
             : exam.subjects
                 .filter((item) => item.subject.teacherId === req.user!.teacherId)
@@ -127,7 +128,7 @@ examsRouter.get(
 
 examsRouter.post(
   "/",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = examCreateSchema.parse(req.body);
     const startDate = parseDateKey(body.startDate);
@@ -183,7 +184,7 @@ examsRouter.post(
 
 examsRouter.patch(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = examUpdateSchema.parse(req.body);
     const existing = await prisma.exam.findUnique({ where: { id: String(req.params.id) } });
@@ -219,7 +220,7 @@ examsRouter.patch(
 
 examsRouter.delete(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const existing = await prisma.exam.findUnique({ where: { id: String(req.params.id) } });
     if (!existing) throw new ApiError(404, "Exam not found.");

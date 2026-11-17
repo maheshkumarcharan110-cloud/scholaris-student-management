@@ -27,7 +27,14 @@ app.disable("x-powered-by");
 app.use(helmet());
 app.use(
   cors({
-    origin: env.CLIENT_ORIGIN.split(",").map((origin) => origin.trim()),
+    origin: (origin, callback) => {
+      // Same-origin requests and non-browser clients may omit the Origin header.
+      if (!origin || env.allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
   }),
 );

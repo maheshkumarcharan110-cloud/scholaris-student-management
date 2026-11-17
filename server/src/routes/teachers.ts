@@ -3,11 +3,11 @@ import { prisma } from "../db.js";
 import { hashPassword } from "../lib/auth.js";
 import { ApiError, asyncHandler } from "../lib/http.js";
 import { teacherCreateSchema, teacherUpdateSchema } from "../schemas.js";
-import { requireRole } from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 export const teachersRouter = Router();
 
-teachersRouter.use(requireRole("ADMIN"));
+teachersRouter.use(requireAdmin);
 
 teachersRouter.get(
   "/",

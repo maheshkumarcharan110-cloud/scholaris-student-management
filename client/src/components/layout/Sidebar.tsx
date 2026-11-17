@@ -9,10 +9,11 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  UserRound,
   Users,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, roleLabel } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { Avatar } from "@/components/ui";
 
@@ -157,6 +158,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               {isAdmin
                 ? adminNav.map((item) => <NavItem key={item.to} {...item} />)
                 : null}
+              <NavItem to="/profile" label="My profile" icon={UserRound} />
               <NavItem to="/settings" label="Settings" icon={Settings} />
             </div>
           </div>
@@ -185,7 +187,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] font-semibold text-white">{user?.name}</p>
               <p className="truncate text-[10px] uppercase tracking-[0.12em] text-ink-300">
-                {user?.role === "ADMIN" ? "Administrator" : "Teacher"}
+                {roleLabel(user?.role)}
               </p>
             </div>
             <button

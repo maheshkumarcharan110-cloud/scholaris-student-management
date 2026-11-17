@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, LogOut, Menu, Search, Settings } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Search, Settings, UserRound } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Avatar } from "@/components/ui";
-import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { cn, roleLabel } from "@/lib/utils";
 
 const titles: Array<{ match: RegExp; title: string }> = [
   { match: /^\/$/, title: "Dashboard" },
@@ -15,6 +16,7 @@ const titles: Array<{ match: RegExp; title: string }> = [
   { match: /^\/exams\/.+/, title: "Exam detail" },
   { match: /^\/exams/, title: "Examinations" },
   { match: /^\/reports/, title: "Reports" },
+  { match: /^\/profile/, title: "Profile" },
   { match: /^\/settings/, title: "Settings" },
 ];
 
@@ -103,6 +105,8 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           </kbd>
         </form>
 
+        <ThemeToggle className="shrink-0" />
+
         <div className="relative" ref={menuRef}>
           <button
             type="button"
@@ -121,7 +125,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
                 {user?.name}
               </span>
               <span className="block text-[9px] uppercase tracking-[0.12em] text-ink-300">
-                {user?.role === "ADMIN" ? "Administrator" : "Teacher"}
+                {roleLabel(user?.role)}
               </span>
             </span>
             <ChevronDown className={cn("h-3.5 w-3.5 text-ink-300 transition", menuOpen && "rotate-180")} />
@@ -135,7 +139,18 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
               <div className="border-b border-line px-3 py-2.5">
                 <p className="truncate text-[13px] font-semibold text-ink-800">{user?.name}</p>
                 <p className="truncate text-[11px] text-ink-400">{user?.email}</p>
+                <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-marigold-600">
+                  {roleLabel(user?.role)}
+                </p>
               </div>
+              <Link
+                to="/profile"
+                role="menuitem"
+                className="mt-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-ink-600 transition hover:bg-paper hover:text-ink-900"
+              >
+                <UserRound className="h-4 w-4" />
+                My profile
+              </Link>
               <Link
                 to="/settings"
                 role="menuitem"

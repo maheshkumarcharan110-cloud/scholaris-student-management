@@ -5,7 +5,7 @@ import { ApiError, asyncHandler } from "../lib/http.js";
 import { addDays, parseDateKey, startOfTodayUTC } from "../lib/dates.js";
 import { gradeFor, percentage, round } from "../lib/grades.js";
 import { paginationSchema, studentSchema, studentUpdateSchema } from "../schemas.js";
-import { requireRole } from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 export const studentsRouter = Router();
 
@@ -229,7 +229,7 @@ function studentData(body: ReturnType<typeof studentSchema.parse>) {
 
 studentsRouter.post(
   "/",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = studentSchema.parse(req.body);
     const cls = await prisma.class.findUnique({ where: { id: body.classId } });
@@ -261,7 +261,7 @@ studentsRouter.post(
 
 studentsRouter.patch(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = studentUpdateSchema.parse(req.body);
     const existing = await prisma.student.findUnique({ where: { id: String(req.params.id) } });
@@ -311,7 +311,7 @@ studentsRouter.patch(
 
 studentsRouter.delete(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const existing = await prisma.student.findUnique({ where: { id: String(req.params.id) } });
     if (!existing) throw new ApiError(404, "Student not found.");

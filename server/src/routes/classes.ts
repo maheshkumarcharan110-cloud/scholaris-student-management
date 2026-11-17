@@ -8,7 +8,7 @@ import {
   subjectCreateSchema,
   subjectUpdateSchema,
 } from "../schemas.js";
-import { requireRole } from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 export const classesRouter = Router();
 
@@ -71,7 +71,7 @@ classesRouter.get(
 
 classesRouter.post(
   "/",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = classCreateSchema.parse(req.body);
     if (body.classTeacherId) {
@@ -95,7 +95,7 @@ classesRouter.post(
 
 classesRouter.patch(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = classUpdateSchema.parse(req.body);
     const existing = await prisma.class.findUnique({ where: { id: String(req.params.id) } });
@@ -124,7 +124,7 @@ classesRouter.patch(
 
 classesRouter.delete(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const existing = await prisma.class.findUnique({
       where: { id: String(req.params.id) },
@@ -179,7 +179,7 @@ subjectsRouter.get(
 
 subjectsRouter.post(
   "/",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = subjectCreateSchema.parse(req.body);
     const cls = await prisma.class.findUnique({ where: { id: body.classId } });
@@ -220,7 +220,7 @@ subjectsRouter.post(
 
 subjectsRouter.patch(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const body = subjectUpdateSchema.parse(req.body);
     const existing = await prisma.subject.findUnique({ where: { id: String(req.params.id) } });
@@ -269,7 +269,7 @@ subjectsRouter.patch(
 
 subjectsRouter.delete(
   "/:id",
-  requireRole("ADMIN"),
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const existing = await prisma.subject.findUnique({
       where: { id: String(req.params.id) },

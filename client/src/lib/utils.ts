@@ -59,6 +59,17 @@ export function getErrorMessage(error: unknown) {
   return "Something went wrong. Please try again.";
 }
 
+export function roleLabel(role?: string | null) {
+  if (role === "SUPER_ADMIN") return "Super Administrator";
+  if (role === "ADMIN") return "Administrator";
+  if (role === "TEACHER") return "Teacher";
+  return role ?? "Member";
+}
+
+export function isAdminRole(role?: string | null) {
+  return role === "SUPER_ADMIN" || role === "ADMIN";
+}
+
 export function gradeTone(grade: string) {
   if (grade === "A+" || grade === "A") return "success" as const;
   if (grade === "B" || grade === "C") return "info" as const;

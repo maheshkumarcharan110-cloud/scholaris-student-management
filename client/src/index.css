@@ -5,6 +5,18 @@
 @layer base {
   :root {
     color-scheme: light;
+    --paper: 246 244 239;
+    --paper-deep: 239 236 228;
+    --surface: 253 252 249;
+    --line: 229 225 215;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --paper: 9 18 30;
+    --paper-deep: 6 13 22;
+    --surface: 16 29 45;
+    --line: 39 55 73;
   }
 
   * {
@@ -172,6 +184,221 @@
   .bg-radial-fade {
     background-image: radial-gradient(circle at 30% 20%, rgba(228, 168, 61, 0.13), transparent 55%);
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Dark theme overrides
+   Brand navy, gold and cream are preserved; surfaces and text are re-toned for
+   comfortable contrast while the sidebar and login story panel stay navy.
+   --------------------------------------------------------------------------- */
+body,
+.cut-card,
+.table-shell,
+.text-input,
+header,
+aside,
+main {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
+}
+
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    fill 0.25s ease,
+    stroke 0.25s ease !important;
+}
+
+.dark body {
+  color: #dce6f2;
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4 {
+  color: #f3f6fa;
+}
+
+.dark .text-ink-950,
+.dark .text-ink-900 {
+  color: #f3f6fa;
+}
+
+.dark .text-ink-800,
+.dark .text-ink-700 {
+  color: #dce6f2;
+}
+
+.dark .text-ink-600,
+.dark .text-ink-500 {
+  color: #b4c6d9;
+}
+
+.dark .text-ink-400 {
+  color: #97afc9;
+}
+
+.dark .text-ink-300 {
+  color: #7e97b3;
+}
+
+.dark .hover\:text-ink-900:hover,
+.dark .hover\:text-ink-800:hover,
+.dark .hover\:text-ink-700:hover {
+  color: #f3f6fa;
+}
+
+.dark .hover\:text-ink-600:hover {
+  color: #dce6f2;
+}
+
+.dark .bg-white {
+  background-color: #15283d;
+}
+
+.dark .hover\:bg-white:hover {
+  background-color: #1b3047;
+}
+
+.dark .bg-ink-50 {
+  background-color: #16293f;
+}
+
+.dark .bg-ink-100 {
+  background-color: #1c3249;
+}
+
+.dark .bg-ink-100\/80 {
+  background-color: rgb(28 50 73 / 0.8);
+}
+
+.dark .border-ink-200 {
+  border-color: #3a5472;
+}
+
+.dark .border-ink-300 {
+  border-color: #486684;
+}
+
+.dark .hover\:border-ink-200:hover {
+  border-color: #486684;
+}
+
+.dark .bg-marigold-50 {
+  background-color: rgb(228 168 61 / 0.12);
+}
+
+.dark .bg-marigold-100 {
+  background-color: rgb(228 168 61 / 0.18);
+}
+
+.dark .bg-sage-50 {
+  background-color: rgb(92 149 117 / 0.14);
+}
+
+.dark .bg-sage-100 {
+  background-color: rgb(92 149 117 / 0.2);
+}
+
+.dark .bg-clay-50 {
+  background-color: rgb(216 119 87 / 0.14);
+}
+
+.dark .bg-clay-100 {
+  background-color: rgb(216 119 87 / 0.2);
+}
+
+.dark .border-marigold-200 {
+  border-color: rgb(228 168 61 / 0.35);
+}
+
+.dark .border-sage-200 {
+  border-color: rgb(92 149 117 / 0.35);
+}
+
+.dark .border-clay-200 {
+  border-color: rgb(216 119 87 / 0.35);
+}
+
+.dark .text-marigold-800,
+.dark .text-marigold-700,
+.dark .text-marigold-600 {
+  color: #ebc063;
+}
+
+.dark .text-marigold-500 {
+  color: #e4a83d;
+}
+
+.dark .text-sage-800,
+.dark .text-sage-700,
+.dark .text-sage-600 {
+  color: #86b599;
+}
+
+.dark .text-clay-800,
+.dark .text-clay-700,
+.dark .text-clay-600 {
+  color: #e59b80;
+}
+
+/* Keep dark ink on gold surfaces where the brand relies on it. */
+.dark .bg-marigold-400.text-ink-950,
+.dark .bg-marigold-400.text-ink-900,
+.dark .bg-marigold-300.text-ink-950,
+.dark .bg-marigold-400\/90.text-ink-950,
+.dark .bg-marigold-400 .text-ink-950,
+.dark .bg-marigold-300 .text-ink-950,
+.dark .bg-marigold-400 .text-ink-900 {
+  color: #0a1626;
+}
+
+.dark .text-input {
+  background-color: #0f2136;
+  color: #e3eaf2;
+}
+
+.dark .text-input::placeholder {
+  color: #6486a8;
+}
+
+.dark .skeleton {
+  background-color: #1c3249;
+}
+
+.dark .scrollbar-slim {
+  scrollbar-color: #2a3e56 transparent;
+}
+
+.dark .ring-progress {
+  background: conic-gradient(
+    theme("colors.marigold.400") var(--progress, 0%),
+    #1c3249 var(--progress, 0%)
+  );
+}
+
+.dark .cut-card,
+.dark .shadow-card {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.28),
+    0 12px 30px -18px rgba(0, 0, 0, 0.65);
+}
+
+.dark .shadow-float {
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.8);
+}
+
+.dark ::selection {
+  background: #8e5118;
+  color: #fdf7ea;
 }
 
 @media print {

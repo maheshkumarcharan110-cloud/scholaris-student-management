@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
+import { isAdminRole } from "./utils";
 import type { AuthUser } from "@/types";
 
 interface AuthContextValue {
@@ -67,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user: data ?? null,
       isLoading,
-      isAdmin: data?.role === "ADMIN",
+      isAdmin: isAdminRole(data?.role),
       login,
       logout,
     }),

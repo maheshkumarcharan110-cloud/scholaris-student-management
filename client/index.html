@@ -10,6 +10,25 @@
       content="Scholaris — a calm, complete student management system for administrators and teachers."
     />
     <title>Scholaris · Student Management System</title>
+    <script>
+      // Apply the saved theme before the app paints to avoid a flash of the wrong mode.
+      (function () {
+        try {
+          var stored = localStorage.getItem("scholaris-theme");
+          var theme =
+            stored === "dark" || stored === "light"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme = theme;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", theme === "dark" ? "#09121E" : "#101F33");
+        } catch (error) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -5,7 +5,17 @@ import { prisma } from "../src/db.js";
 
 type Agent = ReturnType<typeof request.agent>;
 
-const ADMIN = { email: "admin@scholaris.edu", password: "Admin@12345" };
+if (!process.env.ADMIN_PASSWORD) {
+  throw new Error(
+    "ADMIN_PASSWORD is missing. Add it to server/.env before running the API suite.",
+  );
+}
+
+const ADMIN = {
+  email: process.env.ADMIN_EMAIL ?? "admin@scholaris.edu",
+  password: process.env.ADMIN_PASSWORD,
+};
+const ADMIN_NAME = process.env.ADMIN_NAME ?? "Mahesh Kumar";
 const TEACHER = { email: "priya.sharma@scholaris.edu", password: "Teacher@12345" };
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -29,7 +39,8 @@ beforeAll(async () => {
 
   const adminLogin = await admin.post("/api/auth/login").send(ADMIN);
   expect(adminLogin.status).toBe(200);
-  expect(adminLogin.body.user.role).toBe("ADMIN");
+  expect(adminLogin.body.user.role).toBe("SUPER_ADMIN");
+  expect(adminLogin.body.user.name).toBe(ADMIN_NAME);
 
   const teacherLogin = await teacher.post("/api/auth/login").send(TEACHER);
   expect(teacherLogin.status).toBe(200);
@@ -73,10 +84,14 @@ describe("health and authentication", () => {
     expect(response.body.message).toBe("Incorrect email or password.");
   });
 
-  it("returns the signed-in user", async () => {
+  it("returns the signed-in administrator identity", async () => {
     const response = await admin.get("/api/auth/me");
     expect(response.status).toBe(200);
-    expect(response.body.user).toMatchObject({ email: ADMIN.email, role: "ADMIN" });
+    expect(response.body.user).toMatchObject({
+      email: ADMIN.email,
+      name: ADMIN_NAME,
+      role: "SUPER_ADMIN",
+    });
   });
 
   it("validates the change-password payload and current password", async () => {

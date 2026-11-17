@@ -34,7 +34,7 @@ type ButtonSize = "sm" | "md" | "lg";
 
 const buttonVariants: Record<ButtonVariant, string> = {
   primary:
-    "bg-ink-900 text-white shadow-sm hover:bg-ink-800 active:bg-ink-950 disabled:bg-ink-400",
+    "bg-ink-900 text-white shadow-sm hover:bg-ink-800 active:bg-ink-950 disabled:bg-ink-400 dark:bg-marigold-400 dark:text-ink-950 dark:hover:bg-marigold-300 dark:active:bg-marigold-500 dark:disabled:bg-marigold-200",
   secondary:
     "bg-marigold-400 text-ink-950 shadow-sm hover:bg-marigold-300 active:bg-marigold-500 disabled:bg-marigold-200",
   outline:

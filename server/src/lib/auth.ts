@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { Response } from "express";
 import { env } from "../env.js";
+import type { AppRole } from "./roles.js";
 
 export const AUTH_COOKIE = "scholaris_token";
 const SALT_ROUNDS = 12;
@@ -17,7 +18,7 @@ export function verifyPassword(password: string, hash: string) {
 
 export type TokenPayload = {
   sub: string;
-  role: "ADMIN" | "TEACHER";
+  role: AppRole;
 };
 
 export function signToken(payload: TokenPayload) {

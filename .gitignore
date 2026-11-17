@@ -11,6 +11,8 @@ server/dist/
 .env.local
 .env.*.local
 !.env.example
+.admin-credentials
+server/.admin-credentials
 
 # databases
 *.db

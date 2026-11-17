@@ -165,11 +165,11 @@ export default function ExamsPage() {
           {Array.from({ length: 4 }).map((_, index) => (
             <Card key={index} className="flex items-center gap-4 p-4">
               <Skeleton className="h-14 w-14 rounded-xl" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-56" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-32 sm:w-56" />
                 <Skeleton className="h-3 w-80 max-w-full" />
               </div>
-              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-8 w-16 shrink-0 sm:w-24" />
             </Card>
           ))}
         </div>

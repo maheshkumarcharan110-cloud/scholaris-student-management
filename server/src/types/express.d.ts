@@ -1,3 +1,5 @@
+import type { AppRole } from "../lib/roles.js";
+
 export {};
 
 declare global {
@@ -7,7 +9,7 @@ declare global {
         id: string;
         name: string;
         email: string;
-        role: "ADMIN" | "TEACHER";
+        role: AppRole;
         teacherId: string | null;
       };
     }

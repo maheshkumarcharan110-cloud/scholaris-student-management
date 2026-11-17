@@ -1,9 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
+        paper: {
+          DEFAULT: "rgb(var(--paper) / <alpha-value>)",
+          deep: "rgb(var(--paper-deep) / <alpha-value>)",
+        },
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
         ink: {
           50: "#F3F6FA",
           100: "#E3EAF2",
@@ -17,12 +24,6 @@ export default {
           900: "#101F33",
           950: "#0A1626",
         },
-        paper: {
-          DEFAULT: "#F6F4EF",
-          deep: "#EFECE4",
-        },
-        surface: "#FDFCF9",
-        line: "#E5E1D7",
         marigold: {
           50: "#FDF7EA",
           100: "#FAEDCE",

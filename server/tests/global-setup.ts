@@ -1,8 +1,12 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 
 const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+// Load the local (gitignored) administrator credentials used by the seed.
+dotenv.config({ path: path.join(serverDir, ".env") });
 
 /**
  * Rebuilds an isolated SQLite database and loads the deterministic demo data

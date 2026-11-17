@@ -1,6 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
+import { ensureAdmin } from "./admin.js";
 
 const prisma = new PrismaClient();
 
@@ -39,15 +40,7 @@ async function main() {
   await prisma.teacher.deleteMany();
   await prisma.user.deleteMany();
 
-  const adminPassword = await bcrypt.hash("Admin@12345", 12);
-  await prisma.user.create({
-    data: {
-      name: "Ananya Rao",
-      email: "admin@scholaris.edu",
-      passwordHash: adminPassword,
-      role: "ADMIN",
-    },
-  });
+  const admin = await ensureAdmin(prisma);
 
   const teacherSeed = [
     { name: "Priya Sharma", email: "priya.sharma@scholaris.edu", employeeNo: "EMP-001", phone: "+91 98200 11001", qualification: "M.Sc. Mathematics, B.Ed." },
@@ -287,9 +280,14 @@ async function main() {
   console.log(`  ${classes.length} classes · ${allStudents.length} students · ${teacherSeed.length} teachers`);
   console.log(`  ${attendanceRows.length} attendance records · 4 published exams with marks`);
   console.log("\nSign in with:");
-  console.log("  Administrator  admin@scholaris.edu      / Admin@12345");
-  console.log("  Teacher        priya.sharma@scholaris.edu / Teacher@12345");
-  console.log("  Teacher        sofia.alvarez@scholaris.edu / Teacher@12345\n");
+  console.log(`  ${admin.user.name} (Super Administrator)  ${admin.user.email}`);
+  console.log("  Administrator password: configured through ADMIN_PASSWORD (never printed).");
+  console.log("  Teacher  priya.sharma@scholaris.edu / Teacher@12345");
+  console.log("  Teacher  sofia.alvarez@scholaris.edu / Teacher@12345");
+  if (admin.passwordGenerated && admin.credentialsFile) {
+    console.log(`\n  A generated administrator password is stored at ${admin.credentialsFile} (mode 600).`);
+  }
+  console.log("");
 }
 
 main()

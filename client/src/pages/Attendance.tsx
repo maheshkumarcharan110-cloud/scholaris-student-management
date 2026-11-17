@@ -261,8 +261,8 @@ export default function AttendancePage() {
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <Skeleton className="h-9 w-9 rounded-full" />
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="ml-auto h-8 w-56" />
+                  <Skeleton className="h-4 w-28 sm:w-40" />
+                  <Skeleton className="ml-auto h-8 w-20 sm:w-56" />
                 </div>
               ))}
             </div>
@@ -300,8 +300,8 @@ export default function AttendancePage() {
               {Array.from({ length: 8 }).map((_, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <Skeleton className="h-9 w-9 rounded-full" />
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="ml-auto h-8 w-56" />
+                  <Skeleton className="h-4 w-28 sm:w-40" />
+                  <Skeleton className="ml-auto h-8 w-20 sm:w-56" />
                 </div>
               ))}
             </div>

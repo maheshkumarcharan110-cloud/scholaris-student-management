@@ -21,6 +21,7 @@ import {
   ClipboardList,
   GraduationCap,
   Plus,
+  ShieldCheck,
   Sparkles,
   TrendingDown,
   Trophy,
@@ -28,8 +29,9 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useTheme } from "@/lib/theme";
 import type { DashboardData } from "@/types";
-import { cn, formatDate, gradeTone } from "@/lib/utils";
+import { cn, formatDate, roleLabel } from "@/lib/utils";
 import {
   Avatar,
   Badge,
@@ -83,6 +85,15 @@ function ChartTooltip({
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const chartGrid = isDark ? "#273749" : "#E5E1D7";
+  const chartTick = isDark ? "#7E97B3" : "#97AFC9";
+  const chartCursor = isDark ? "#486684" : "#C5D3E3";
+  const chartDot = isDark ? "#F3F6FA" : "#101F33";
+  const chartDotStroke = isDark ? "#101D2D" : "#FDFCF9";
+  const tooltipSurface = isDark ? "#101D2D" : "#FDFCF9";
+  const tooltipLine = isDark ? "#273749" : "#E5E1D7";
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => api.get<{ data: DashboardData }>("/dashboard").then((response) => response.data),
@@ -122,6 +133,12 @@ export default function DashboardPage() {
           <h1 className="font-display text-[30px] font-semibold leading-tight tracking-[-0.025em] text-ink-950 sm:text-[38px]">
             {greeting()}, {user?.name.split(" ")[0]}.
           </h1>
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-[12px] font-semibold text-ink-500">
+            <ShieldCheck className="h-3.5 w-3.5 text-marigold-500" />
+            <span>{roleLabel(user?.role)}</span>
+            <span className="text-ink-300">·</span>
+            <span className="text-ink-700">{user?.name}</span>
+          </p>
           <p className="mt-1.5 max-w-xl text-sm leading-6 text-ink-400">
             {today.rate >= 90
               ? "Attendance is strong today. Here is the rest of the picture."
@@ -210,11 +227,11 @@ export default function DashboardPage() {
                     <stop offset="95%" stopColor="#E4A83D" stopOpacity={0.015} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#E5E1D7" strokeDasharray="3 5" vertical={false} />
+                <CartesianGrid stroke={chartGrid} strokeDasharray="3 5" vertical={false} />
                 <XAxis
                   dataKey="date"
                   tickFormatter={(value) => formatDate(String(value), "d MMM")}
-                  tick={{ fill: "#97AFC9", fontSize: 10 }}
+                  tick={{ fill: chartTick, fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   interval="preserveStartEnd"
@@ -223,19 +240,19 @@ export default function DashboardPage() {
                 <YAxis
                   domain={[0, 100]}
                   ticks={[0, 25, 50, 75, 100]}
-                  tick={{ fill: "#97AFC9", fontSize: 10 }}
+                  tick={{ fill: chartTick, fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(value) => `${value}%`}
                 />
-                <Tooltip content={<ChartTooltip />} cursor={{ stroke: "#C5D3E3", strokeDasharray: "4 4" }} />
+                <Tooltip content={<ChartTooltip />} cursor={{ stroke: chartCursor, strokeDasharray: "4 4" }} />
                 <Area
                   type="monotone"
                   dataKey="rate"
                   stroke="#D99A2B"
                   strokeWidth={2.3}
                   fill="url(#attendanceFill)"
-                  activeDot={{ r: 4, fill: "#101F33", stroke: "#FDFCF9", strokeWidth: 2 }}
+                  activeDot={{ r: 4, fill: chartDot, stroke: chartDotStroke, strokeWidth: 2 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -279,7 +296,9 @@ export default function DashboardPage() {
                     <Tooltip
                       contentStyle={{
                         borderRadius: 12,
-                        border: "1px solid #E5E1D7",
+                        border: `1px solid ${tooltipLine}`,
+                        background: tooltipSurface,
+                        color: isDark ? "#E3EAF2" : "#101F33",
                         fontSize: 12,
                         boxShadow: "0 12px 30px -16px rgba(16,31,51,.25)",
                       }}
