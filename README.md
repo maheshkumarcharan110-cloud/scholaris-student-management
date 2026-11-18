@@ -34,6 +34,15 @@ Built with **React 19 + TypeScript + Tailwind CSS** on the front end and **Node.
 
 ---
 
+## Repository
+
+- **GitHub**: [maheshkumarcharan110-cloud/scholaris-student-management](https://github.com/maheshkumarcharan110-cloud/scholaris-student-management)
+- **Visibility**: Public
+- **Default branch**: `main`
+- **Clone**: `git clone https://github.com/maheshkumarcharan110-cloud/scholaris-student-management.git`
+
+---
+
 ## Quick start
 
 ### Prerequisites
@@ -329,7 +338,7 @@ npx playwright install chromium
 ## Project structure
 
 ```
-new_project/
+scholaris-student-management/
 ├── client/                 React application
 │   ├── src/
 │   │   ├── components/     Layout, UI kit, theme toggle, auth shell, account cards
@@ -341,12 +350,13 @@ new_project/
 │   │   └── types.ts        Shared API response types
 │   └── vite.config.ts
 ├── server/                 Express API
-│   ├── prisma/             Schema, migrations, seed, administrator bootstrap, SQLite database
+│   ├── prisma/             Schema, migrations, seed, administrator bootstrap;
+│   │                       local SQLite databases are gitignored
 │   └── src/
 │       ├── lib/            Auth, roles, tokens, mailer, audit, dates, grades, results
 │       ├── middleware/     Authentication, role guards, CSRF origin guard
 │       ├── routes/         Auth, admin, dashboard, students, teachers, classes,
-│       │                   subjects, attendance, exams, reports
+│       │                   attendance, exams, reports
 │       ├── schemas.ts      Zod request validation
 │       ├── app.ts          Express application and CORS allow-list
 │       └── index.ts        HTTP server and graceful shutdown

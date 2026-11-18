@@ -8,8 +8,7 @@ server/dist/
 
 # environment & secrets
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
 .admin-credentials
 server/.admin-credentials
@@ -17,6 +16,8 @@ server/.admin-credentials
 # databases
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 server/prisma/*.db
