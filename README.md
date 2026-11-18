@@ -479,4 +479,4 @@ The current public demo is served through a temporary Cloudflare Quick Tunnel in
 
 ## License
 
-Private educational project. Demo data is fictional.
+Educational project. Demo data is fictional. No license is granted for redistribution or reuse.
