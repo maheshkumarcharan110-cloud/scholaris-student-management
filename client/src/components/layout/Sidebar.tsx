@@ -8,7 +8,9 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  ScrollText,
   Settings,
+  ShieldCheck,
   UserRound,
   Users,
   X,
@@ -29,7 +31,13 @@ const academicNav = [
   { to: "/reports", label: "Reports", icon: ChartNoAxesCombined },
 ];
 
-const adminNav = [{ to: "/teachers", label: "Teachers", icon: GraduationCap, admin: true }];
+const adminNav = [
+  { to: "/teachers", label: "Teachers", icon: GraduationCap },
+  { to: "/admin", label: "Account overview", icon: LayoutDashboard, end: true },
+  { to: "/admin/users", label: "Users & registrations", icon: Users },
+  { to: "/admin/roles", label: "Roles & permissions", icon: ShieldCheck },
+  { to: "/admin/activity", label: "Activity logs", icon: ScrollText },
+];
 
 function BrandMark({ className }: { className?: string }) {
   return (
@@ -70,7 +78,7 @@ function NavItem({
 }
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, isStaff, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -128,58 +136,63 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
 
         <nav className="relative scrollbar-slim flex-1 space-y-7 overflow-y-auto px-3.5 pb-6 pt-2" aria-label="Main navigation">
-          <div>
-            <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
-              Workspace
-            </p>
-            <div className="space-y-1">
-              {mainNav.map((item) => (
-                <NavItem key={item.to} {...item} />
-              ))}
-            </div>
-          </div>
+          {isStaff ? (
+            <>
+              <div>
+                <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+                  Workspace
+                </p>
+                <div className="space-y-1">
+                  {mainNav.map((item) => (
+                    <NavItem key={item.to} {...item} />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+                  Academics
+                </p>
+                <div className="space-y-1">
+                  {academicNav.map((item) => (
+                    <NavItem key={item.to} {...item} />
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : null}
 
           <div>
             <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
-              Academics
+              {isAdmin ? "Administration" : "Account"}
             </p>
             <div className="space-y-1">
-              {academicNav.map((item) => (
-                <NavItem key={item.to} {...item} />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
-              Administration
-            </p>
-            <div className="space-y-1">
-              {isAdmin
-                ? adminNav.map((item) => <NavItem key={item.to} {...item} />)
-                : null}
+              {isAdmin ? adminNav.map((item) => <NavItem key={item.to} {...item} />) : null}
               <NavItem to="/profile" label="My profile" icon={UserRound} />
+              <NavItem to="/security" label="Security" icon={ShieldCheck} />
               <NavItem to="/settings" label="Settings" icon={Settings} />
             </div>
           </div>
         </nav>
 
-        <div className="relative mx-3.5 mb-3 overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.045] p-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-marigold-300">
-            Quick action
-          </p>
-          <p className="mt-1.5 text-[12px] leading-5 text-ink-200">
-            {isAdmin ? "Start the school day with roll call." : "Record today's class attendance."}
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate("/attendance")}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-marigold-400 px-2.5 py-1.5 text-[11px] font-semibold text-ink-950 transition hover:bg-marigold-300"
-          >
-            <CalendarCheck2 className="h-3.5 w-3.5" />
-            Take attendance
-          </button>
-        </div>
+        {isStaff ? (
+          <div className="relative mx-3.5 mb-3 overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.045] p-3.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-marigold-300">
+              Quick action
+            </p>
+            <p className="mt-1.5 text-[12px] leading-5 text-ink-200">
+              {isAdmin ? "Start the school day with roll call." : "Record today's class attendance."}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/attendance")}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-marigold-400 px-2.5 py-1.5 text-[11px] font-semibold text-ink-950 transition hover:bg-marigold-300"
+            >
+              <CalendarCheck2 className="h-3.5 w-3.5" />
+              Take attendance
+            </button>
+          </div>
+        ) : null}
 
         <div className="relative border-t border-white/[0.08] px-4 py-4">
           <div className="flex items-center gap-3">

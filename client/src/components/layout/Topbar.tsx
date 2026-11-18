@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, LogOut, Menu, Search, Settings, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Search, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Avatar } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { cn, roleLabel } from "@/lib/utils";
+import { cn, isStaffRole, roleLabel } from "@/lib/utils";
 
 const titles: Array<{ match: RegExp; title: string }> = [
   { match: /^\/$/, title: "Dashboard" },
+  { match: /^\/admin\/users/, title: "Users & registrations" },
+  { match: /^\/admin\/roles/, title: "Roles & permissions" },
+  { match: /^\/admin\/activity/, title: "Activity logs" },
+  { match: /^\/admin/, title: "Account overview" },
   { match: /^\/students\/.+/, title: "Student profile" },
   { match: /^\/students/, title: "Students" },
   { match: /^\/teachers/, title: "Teachers" },
@@ -16,12 +20,14 @@ const titles: Array<{ match: RegExp; title: string }> = [
   { match: /^\/exams\/.+/, title: "Exam detail" },
   { match: /^\/exams/, title: "Examinations" },
   { match: /^\/reports/, title: "Reports" },
+  { match: /^\/security/, title: "Security" },
   { match: /^\/profile/, title: "Profile" },
   { match: /^\/settings/, title: "Settings" },
 ];
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth();
+  const isStaff = isStaffRole(user?.role);
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useState("");
@@ -89,7 +95,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           <h1 className="truncate text-sm font-semibold text-ink-800">{title}</h1>
         </div>
 
-        <form onSubmit={submitSearch} className="relative hidden w-64 md:block xl:w-80" role="search">
+        <form onSubmit={submitSearch} className={cn("relative hidden w-64 md:block xl:w-80", !isStaff && "md:hidden")} role="search">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-300" aria-hidden="true" />
           <input
             ref={searchRef}
@@ -158,6 +164,14 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
               >
                 <Settings className="h-4 w-4" />
                 Account settings
+              </Link>
+              <Link
+                to="/security"
+                role="menuitem"
+                className="mt-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-ink-600 transition hover:bg-paper hover:text-ink-900"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Security settings
               </Link>
               <button
                 type="button"

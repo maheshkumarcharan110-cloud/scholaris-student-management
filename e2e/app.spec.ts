@@ -77,14 +77,20 @@ test.describe("administrator journey", () => {
     await expect(main.getByRole("heading", { name: "Administrator profile" })).toBeVisible();
     await expect(main.getByText(ADMIN_NAME, { exact: true }).first()).toBeVisible();
     await expect(main.getByText("Super Administrator", { exact: true }).first()).toBeVisible();
-    await expect(page.getByLabel(/^Current password/)).toBeVisible();
+    await expect(main.getByRole("heading", { name: "Edit profile" })).toBeVisible();
+    await expect(main.getByRole("heading", { name: "Security settings" })).toBeVisible();
 
     await page.getByRole("link", { name: "Settings", exact: true }).click();
     await expect(main.getByRole("heading", { name: "Settings", exact: true })).toBeVisible();
-    await expect(page.getByLabel(/^Current password/)).toBeVisible();
+    await expect(main.getByText("Security", { exact: true }).first()).toBeVisible();
+    await page.getByRole("link", { name: "Open security settings" }).click();
+    await expect(page).toHaveURL(/\/security/);
+    await expect(main.getByRole("heading", { name: "Security settings" })).toBeVisible();
+    await expect(page.getByLabel(/^Current password/).first()).toBeVisible();
     await expect(page.getByLabel(/^New password/)).toBeVisible();
+    await expect(page.getByLabel("New email address")).toBeVisible();
 
-    await main.getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("button", { name: "Sign out", exact: true }).first().click();
     await expect(page).toHaveURL(/\/login/);
     await expect(page.getByRole("heading", { name: "Sign in to your workspace" })).toBeVisible();
   });
@@ -101,6 +107,83 @@ test.describe("teacher permissions", () => {
     await page.goto("/teachers");
     await expect(page).toHaveURL(/\/$/);
     await expect(main.getByText("Active students", { exact: true })).toBeVisible();
+
+    await page.goto("/admin/users");
+    await expect(page).toHaveURL(/\/$/);
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
+const stamp = Date.now();
+const APPLICANT = {
+  name: "E2E Applicant",
+  email: `e2e.applicant.${stamp}@scholaris.test`,
+  password: "Applicant@2026",
+};
+
+test.describe("public registration and administrator approval", () => {
+  test("registration stays pending, is approved by Mahesh Kumar, then can sign in", async ({ page }) => {
+    await page.goto("/register");
+    await expect(page.getByRole("heading", { name: "Request your account" })).toBeVisible();
+
+    await page.getByLabel("Full name").fill(APPLICANT.name);
+    await page.getByLabel("Email address").fill(APPLICANT.email);
+    await page.getByLabel("Phone (optional)").fill("+91 90000 12345");
+    await page.getByLabel("Account type").selectOption("TEACHER");
+    await page.getByLabel(/^Password/).fill(APPLICANT.password);
+    await page.getByLabel("Confirm password").fill(APPLICANT.password);
+    await page.getByRole("button", { name: "Request account" }).click();
+
+    await expect(
+      page.getByText(
+        "Your account has been created successfully. Your registration is awaiting approval from the administrator. You will be able to access Scholaris once your account has been approved.",
+      ),
+    ).toBeVisible();
+
+    await page.goto("/login");
+    await page.getByLabel("Email address").fill(APPLICANT.email);
+    await page.getByLabel(/^Password/).fill(APPLICANT.password);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page.getByRole("alert")).toContainText(/awaiting administrator approval/i);
+
+    await signIn(page, ADMIN, ADMIN_FIRST_NAME);
+    await page.goto("/admin/users?status=PENDING");
+    const search = page.getByPlaceholder("Search by name, email, or phone…");
+    await search.fill(APPLICANT.email);
+    const row = page.locator("tbody tr").filter({ hasText: APPLICANT.email });
+    await expect(row).toBeVisible();
+    await row.getByRole("button", { name: "Approve" }).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading", { name: "Approve registration" })).toBeVisible();
+    await dialog.getByRole("button", { name: "Approve account" }).click();
+    await expect(page.getByText("Registration approved").first()).toBeVisible();
+
+    await page.getByRole("button", { name: "Sign out" }).first().click();
+    await expect(page).toHaveURL(/\/login/);
+
+    await signIn(page, { email: APPLICANT.email, password: APPLICANT.password }, "E2E");
+    await expect(page.getByRole("main").getByText("E2E Applicant", { exact: true }).first()).toBeVisible();
+    await page.goto("/admin/users");
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test("requires the current password for password and email changes", async ({ page }) => {
+    await signIn(page, ADMIN, ADMIN_FIRST_NAME);
+    await page.goto("/security");
+    await expect(page.getByRole("heading", { name: "Security settings" })).toBeVisible();
+
+    await page.locator("#currentPassword").fill("DefinitelyWrong@2026");
+    await page.locator("#newPassword").fill("SomeOtherPass@2026");
+    await page.locator("#confirmPassword").fill("SomeOtherPass@2026");
+    await page.getByRole("button", { name: "Update password" }).click();
+    await expect(page.getByText("Your current password is incorrect.").first()).toBeVisible();
+
+    await page.getByLabel("New email address").fill(`blocked.change.${stamp}@scholaris.test`);
+    await page.locator("#email-change-password").fill("DefinitelyWrong@2026");
+    await page.getByRole("button", { name: "Send confirmation" }).click();
+    await expect(page.getByText("Your current password is incorrect.").last()).toBeVisible();
   });
 });
 
@@ -144,6 +227,11 @@ test.describe("dark and light mode", () => {
       "/reports",
       "/profile",
       "/settings",
+      "/security",
+      "/admin",
+      "/admin/users",
+      "/admin/roles",
+      "/admin/activity",
     ];
 
     for (const theme of ["light", "dark"] as const) {

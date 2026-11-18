@@ -60,6 +60,9 @@ async function main() {
         email: teacher.email,
         passwordHash: teacherPassword,
         role: "TEACHER",
+        status: "APPROVED",
+        active: true,
+        emailVerifiedAt: new Date(),
         teacher: {
           create: {
             employeeNo: teacher.employeeNo,

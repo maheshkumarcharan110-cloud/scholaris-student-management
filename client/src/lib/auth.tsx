@@ -9,15 +9,18 @@ import {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
-import { isAdminRole } from "./utils";
+import { isAdminRole, isStaffRole, isSuperAdminRole } from "./utils";
 import type { AuthUser } from "@/types";
 
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isStaff: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<AuthUser | null>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -55,6 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [queryClient]);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await api.get<{ user: AuthUser }>("/auth/me");
+      queryClient.setQueryData(["auth", "me"], response.user);
+      return response.user;
+    } catch {
+      queryClient.setQueryData(["auth", "me"], null);
+      return null;
+    }
+  }, [queryClient]);
+
   useEffect(() => {
     const handler = () => {
       queryClient.setQueryData(["auth", "me"], null);
@@ -69,10 +83,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: data ?? null,
       isLoading,
       isAdmin: isAdminRole(data?.role),
+      isSuperAdmin: isSuperAdminRole(data?.role),
+      isStaff: isStaffRole(data?.role),
       login,
       logout,
+      refreshUser,
     }),
-    [data, isLoading, login, logout],
+    [data, isLoading, login, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

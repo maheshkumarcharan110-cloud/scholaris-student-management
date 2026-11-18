@@ -63,11 +63,36 @@ export function roleLabel(role?: string | null) {
   if (role === "SUPER_ADMIN") return "Super Administrator";
   if (role === "ADMIN") return "Administrator";
   if (role === "TEACHER") return "Teacher";
+  if (role === "STUDENT") return "Student";
   return role ?? "Member";
 }
 
 export function isAdminRole(role?: string | null) {
   return role === "SUPER_ADMIN" || role === "ADMIN";
+}
+
+export function isSuperAdminRole(role?: string | null) {
+  return role === "SUPER_ADMIN";
+}
+
+export function isStaffRole(role?: string | null) {
+  return role === "SUPER_ADMIN" || role === "ADMIN" || role === "TEACHER";
+}
+
+export function accountStatusLabel(status?: string | null) {
+  if (status === "PENDING") return "Pending approval";
+  if (status === "APPROVED") return "Approved";
+  if (status === "REJECTED") return "Rejected";
+  if (status === "SUSPENDED") return "Suspended";
+  return status ?? "Unknown";
+}
+
+export function accountStatusTone(status?: string | null) {
+  if (status === "APPROVED") return "success" as const;
+  if (status === "PENDING") return "warning" as const;
+  if (status === "REJECTED") return "danger" as const;
+  if (status === "SUSPENDED") return "danger" as const;
+  return "neutral" as const;
 }
 
 export function gradeTone(grade: string) {

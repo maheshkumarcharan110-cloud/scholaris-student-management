@@ -12,7 +12,7 @@ const passwordSchema = z
     currentPassword: z.string().min(1, "Enter your current password"),
     newPassword: z
       .string()
-      .min(8, "Use at least 8 characters")
+      .min(10, "Use at least 10 characters")
       .max(72, "Password is too long")
       .regex(/[A-Za-z]/, "Include at least one letter")
       .regex(/[0-9]/, "Include at least one number"),
@@ -67,7 +67,7 @@ export function ChangePasswordCard({ className }: { className?: string }) {
     <Card className={className}>
       <SectionHeading
         title="Change password"
-        description="Use at least 8 characters with a letter and a number."
+        description="Use at least 10 characters with a letter and a number."
       />
       <form className="mt-5 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
         <Field label="Current password" htmlFor="currentPassword" error={errors.currentPassword?.message} required>
@@ -84,7 +84,7 @@ export function ChangePasswordCard({ className }: { className?: string }) {
           label="New password"
           htmlFor="newPassword"
           error={errors.newPassword?.message}
-          hint="At least 8 characters, including a letter and a number."
+          hint="At least 10 characters, including a letter and a number."
           required
         >
           <Input

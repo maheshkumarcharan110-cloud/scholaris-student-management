@@ -69,6 +69,10 @@ export async function ensureAdmin(prisma: PrismaClient) {
         email: config.email,
         passwordHash: await bcrypt.hash(generatedPassword, 12),
         role: "SUPER_ADMIN",
+        status: "APPROVED",
+        active: true,
+        emailVerifiedAt: new Date(),
+        approvedAt: new Date(),
       },
     });
     created = true;
@@ -78,20 +82,29 @@ export async function ensureAdmin(prisma: PrismaClient) {
       name: string;
       role: "SUPER_ADMIN";
       active: boolean;
+      status: "APPROVED";
+      emailVerifiedAt?: Date;
+      tokenVersion?: { increment: number };
       email?: string;
       passwordHash?: string;
     } = {
       name: config.name,
       role: "SUPER_ADMIN",
       active: true,
+      status: "APPROVED",
     };
+
+    if (!admin.emailVerifiedAt) data.emailVerifiedAt = new Date();
 
     if (admin.email !== config.email) {
       const conflict = await prisma.user.findUnique({ where: { email: config.email } });
       if (!conflict) data.email = config.email;
     }
 
-    if (config.password) data.passwordHash = await bcrypt.hash(config.password, 12);
+    if (config.password) {
+      data.passwordHash = await bcrypt.hash(config.password, 12);
+      data.tokenVersion = { increment: 1 };
+    }
 
     admin = await prisma.user.update({ where: { id: admin.id }, data });
   }

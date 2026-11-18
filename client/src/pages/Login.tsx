@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
 import { getErrorMessage } from "@/lib/utils";
+import { ApiError } from "@/lib/api";
 import { Button, Field, Input, Spinner } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FullScreenLoader } from "@/components/auth-gate";
@@ -42,6 +43,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/";
 
@@ -60,11 +62,14 @@ export default function LoginPage() {
   if (user) return <Navigate to="/" replace />;
 
   const onSubmit = async (values: LoginValues) => {
+    setErrorCode(null);
     try {
       const signedIn = await login(values.email, values.password);
       toast.success(`Welcome back, ${signedIn.name.split(" ")[0]}.`, "Your workspace is ready.");
-      navigate(redirectTo, { replace: true });
+      const fallback = signedIn.role === "STUDENT" ? "/profile" : "/";
+      navigate(redirectTo === "/" ? fallback : redirectTo, { replace: true });
     } catch (error) {
+      if (error instanceof ApiError && error.code) setErrorCode(error.code);
       setError("root", { message: getErrorMessage(error) });
     }
   };
@@ -216,10 +221,30 @@ export default function LoginPage() {
           {errors.root ? (
             <div
               role="alert"
-              className="mt-6 flex items-start gap-2.5 rounded-xl border border-clay-200 bg-clay-50 px-3.5 py-3 text-[13px] leading-5 text-clay-700"
+              className="mt-6 rounded-xl border border-clay-200 bg-clay-50 px-3.5 py-3 text-[13px] leading-5 text-clay-700"
             >
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
-              {errors.root.message}
+              <div className="flex items-start gap-2.5">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p>{errors.root.message}</p>
+                  {errorCode === "PENDING" ? (
+                    <Link
+                      to="/verify-email"
+                      className="mt-1.5 inline-flex font-semibold underline decoration-clay-300 underline-offset-2"
+                    >
+                      Resend my verification link
+                    </Link>
+                  ) : null}
+                  {errorCode === "EMAIL_NOT_VERIFIED" ? (
+                    <Link
+                      to="/verify-email"
+                      className="mt-1.5 inline-flex font-semibold underline decoration-clay-300 underline-offset-2"
+                    >
+                      Verify my email address
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
             </div>
           ) : null}
 
@@ -261,11 +286,28 @@ export default function LoginPage() {
               </div>
             </Field>
 
+            <div className="flex items-center justify-between gap-2">
+              <span />
+              <Link
+                to="/forgot-password"
+                className="text-[12px] font-semibold text-ink-600 transition hover:text-ink-950"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <Button type="submit" size="lg" className="w-full" loading={isSubmitting}>
               {isSubmitting ? "Signing in…" : "Sign in"}
               {!isSubmitting ? <ArrowRight className="h-4 w-4" /> : null}
             </Button>
           </form>
+
+          <p className="mt-5 text-center text-[12px] text-ink-400">
+            New to Scholaris?{" "}
+            <Link to="/register" className="font-semibold text-ink-700 underline decoration-ink-200 underline-offset-2 hover:text-ink-950">
+              Request an account
+            </Link>
+          </p>
 
           {demoAccounts.length ? (
             <div className="mt-7 rounded-xl border border-line bg-surface p-4">

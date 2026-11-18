@@ -59,6 +59,9 @@ teachersRouter.post(
         email: body.email,
         passwordHash: await hashPassword(body.password),
         role: "TEACHER",
+        status: "APPROVED",
+        active: true,
+        emailVerifiedAt: new Date(),
         teacher: {
           create: {
             employeeNo: body.employeeNo,
@@ -109,9 +112,14 @@ teachersRouter.patch(
       where: { id: teacher.userId },
       data: {
         ...(body.name !== undefined ? { name: body.name } : {}),
-        ...(body.email !== undefined ? { email: body.email } : {}),
-        ...(body.active !== undefined ? { active: body.active } : {}),
+        ...(body.email !== undefined
+          ? { email: body.email, emailVerifiedAt: new Date() }
+          : {}),
+        ...(body.active !== undefined
+          ? { active: body.active, status: body.active ? "APPROVED" : "SUSPENDED" }
+          : {}),
         ...(body.password ? { passwordHash: await hashPassword(body.password) } : {}),
+        ...(body.password || body.email !== undefined ? { tokenVersion: { increment: 1 } } : {}),
         teacher: {
           update: {
             ...(body.phone !== undefined ? { phone: body.phone } : {}),
@@ -160,7 +168,10 @@ teachersRouter.delete(
         where: { teacherId: teacher.id },
         data: { teacherId: null },
       }),
-      prisma.user.update({ where: { id: teacher.userId }, data: { active: false } }),
+      prisma.user.update({
+        where: { id: teacher.userId },
+        data: { active: false, status: "SUSPENDED", tokenVersion: { increment: 1 } },
+      }),
     ]);
 
     res.json({ message: "Teacher account deactivated." });

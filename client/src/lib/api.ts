@@ -2,12 +2,14 @@ const API_BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
 export class ApiError extends Error {
   status: number;
+  code?: string;
   details?: Record<string, string[]>;
 
-  constructor(status: number, message: string, details?: Record<string, string[]>) {
+  constructor(status: number, message: string, details?: Record<string, string[]>, code?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
     this.details = details;
   }
 }
@@ -35,7 +37,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   if (!response.ok) {
-    const data = payload as { message?: string; details?: Record<string, string[]> } | null;
+    const data = payload as { message?: string; code?: string; details?: Record<string, string[]> } | null;
     if (response.status === 401 && !path.startsWith("/auth/login")) {
       window.dispatchEvent(new Event("scholaris:unauthorized"));
     }
@@ -43,6 +45,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       response.status,
       data?.message ?? `Request failed (${response.status}).`,
       data?.details,
+      data?.code,
     );
   }
 

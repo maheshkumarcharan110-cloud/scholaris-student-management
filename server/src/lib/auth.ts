@@ -19,6 +19,7 @@ export function verifyPassword(password: string, hash: string) {
 export type TokenPayload = {
   sub: string;
   role: AppRole;
+  ver: number;
 };
 
 export function signToken(payload: TokenPayload) {
@@ -31,10 +32,23 @@ export function verifyToken(token: string): TokenPayload | null {
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET);
     if (typeof decoded === "string" || !decoded.sub || !decoded.role) return null;
-    return { sub: String(decoded.sub), role: decoded.role as TokenPayload["role"] };
+    return {
+      sub: String(decoded.sub),
+      role: decoded.role as TokenPayload["role"],
+      ver: typeof decoded.ver === "number" ? decoded.ver : 0,
+    };
   } catch {
     return null;
   }
+}
+
+function sessionMaxAge() {
+  const match = /^(\d+)\s*([smhd])$/.exec(env.JWT_EXPIRES_IN);
+  if (!match) return 8 * 60 * 60 * 1000;
+  const value = Number(match[1]);
+  const unit = match[2];
+  const seconds = unit === "s" ? value : unit === "m" ? value * 60 : unit === "h" ? value * 3600 : value * 86400;
+  return seconds * 1000;
 }
 
 export const cookieOptions = {
@@ -42,7 +56,7 @@ export const cookieOptions = {
   sameSite: "lax" as const,
   secure: env.COOKIE_SECURE || env.isProduction,
   path: "/",
-  maxAge: 8 * 60 * 60 * 1000,
+  maxAge: sessionMaxAge(),
 };
 
 export function setAuthCookie(res: Response, token: string) {

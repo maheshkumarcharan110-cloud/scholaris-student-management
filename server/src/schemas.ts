@@ -22,10 +22,22 @@ const optionalDateKey = z
 
 const password = z
   .string()
-  .min(8, "Password must be at least 8 characters")
+  .min(10, "Password must be at least 10 characters")
   .max(72, "Password is too long")
   .regex(/[A-Za-z]/, "Password must contain a letter")
   .regex(/[0-9]/, "Password must contain a number");
+
+const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Enter a valid email address")
+  .max(200, "Email address is too long");
+
+const phone = z
+  .union([z.string().trim().max(30, "Phone number is too long"), z.literal(""), z.null()])
+  .optional()
+  .transform((value) => (value === "" || value === null ? null : value));
 
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email address"),
@@ -181,4 +193,85 @@ export const paginationSchema = z.object({
   search: z.string().trim().optional(),
   classId: z.string().trim().optional(),
   status: z.enum(["ACTIVE", "INACTIVE", "GRADUATED", "ALL"]).optional(),
+});
+
+/* ------------------------------ Account auth ------------------------------ */
+
+export const registerSchema = z
+  .object({
+    name: z.string().trim().min(2, "Enter your full name").max(120, "Name is too long"),
+    email,
+    phone,
+    password,
+    confirmPassword: z.string().min(1, "Confirm your password"),
+    requestedRole: z.enum(["TEACHER", "STUDENT"]),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export const verifyEmailSchema = z.object({
+  token: z.string().min(20, "This verification link is invalid").max(200),
+});
+
+export const resendVerificationSchema = z.object({ email });
+
+export const forgotPasswordSchema = z.object({ email });
+
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(20, "This reset link is invalid").max(200),
+    password,
+    confirmPassword: z.string().min(1, "Confirm your new password"),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export const profileUpdateSchema = z.object({
+  name: z.string().trim().min(2, "Enter your full name").max(120, "Name is too long"),
+  phone,
+});
+
+export const emailChangeSchema = z.object({
+  newEmail: email,
+  currentPassword: z.string().min(1, "Enter your current password"),
+});
+
+/* ----------------------------- Administrator ----------------------------- */
+
+const accountStatus = z.enum(["PENDING", "APPROVED", "REJECTED", "SUSPENDED", "ALL"]);
+const appRole = z.enum(["SUPER_ADMIN", "ADMIN", "TEACHER", "STUDENT"]);
+
+export const adminUserQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  search: z.string().trim().max(120).optional(),
+  status: accountStatus.default("ALL"),
+  role: z.union([appRole, z.literal("ALL")]).default("ALL"),
+});
+
+export const adminApproveSchema = z.object({
+  role: appRole.optional(),
+  note: optionalString(300),
+});
+
+export const adminRejectSchema = z.object({
+  reason: optionalString(300),
+});
+
+export const adminSuspendSchema = z.object({
+  reason: optionalString(300),
+});
+
+export const adminRoleSchema = z.object({
+  role: appRole,
+});
+
+export const adminActivityQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(30),
+  action: z.string().trim().max(60).optional(),
 });

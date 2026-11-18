@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { roleLabel } from "@/lib/utils";
 import { Avatar, Badge, Button, Card, PageHeader, SectionHeading } from "@/components/ui";
-import { ChangePasswordCard } from "@/components/account/change-password-card";
 
 const roleCopy: Record<string, { description: string }> = {
   SUPER_ADMIN: {
@@ -16,6 +15,9 @@ const roleCopy: Record<string, { description: string }> = {
   },
   TEACHER: {
     description: "Access to your classes, attendance registers, marks entry, and reports.",
+  },
+  STUDENT: {
+    description: "Access limited to your own profile, sign-in email, and security settings.",
   },
 };
 
@@ -118,7 +120,25 @@ export default function SettingsPage() {
           </Card>
         </div>
 
-        <ChangePasswordCard />
+        <div className="space-y-6">
+          <Card className="p-6">
+            <SectionHeading
+              title="Security"
+              description="Password, sign-in email, sessions, and recent security activity."
+            />
+            <p className="mt-3 text-[12px] leading-5 text-ink-400">
+              Your password is hashed with bcrypt. Changing it or your email revokes older sessions
+              across every device.
+            </p>
+            <Link
+              to="/security"
+              className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-ink-950 px-4 text-[13px] font-semibold text-white transition hover:bg-ink-900"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Open security settings
+            </Link>
+          </Card>
+        </div>
       </div>
     </div>
   );

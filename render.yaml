@@ -33,6 +33,30 @@ services:
       # Replace with the final HTTPS origin after the service is created.
       - key: CLIENT_ORIGIN
         sync: false
+      # Public base URL used in verification and password-reset links.
+      - key: APP_URL
+        sync: false
+      # Administrator approval is always required. Email verification is
+      # optional and stays off until SMTP is configured.
+      - key: REQUIRE_EMAIL_VERIFICATION
+        value: "false"
+      - key: LOGIN_MAX_ATTEMPTS
+        value: "5"
+      - key: LOGIN_LOCK_MINUTES
+        value: "15"
+      # Optional SMTP credentials for verification, approval, and reset email.
+      # - key: SMTP_HOST
+      #   sync: false
+      # - key: SMTP_PORT
+      #   value: "587"
+      # - key: SMTP_SECURE
+      #   value: "false"
+      # - key: SMTP_USER
+      #   sync: false
+      # - key: SMTP_PASS
+      #   sync: false
+      # - key: MAIL_FROM
+      #   sync: false
       - key: ADMIN_NAME
         value: Mahesh Kumar
       - key: ADMIN_EMAIL

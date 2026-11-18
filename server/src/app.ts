@@ -8,8 +8,10 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { env } from "./env.js";
 import { errorHandler, notFoundHandler } from "./lib/http.js";
-import { authenticate } from "./middleware/auth.js";
+import { authenticate, requireStaff } from "./middleware/auth.js";
+import { csrfGuard } from "./middleware/csrf.js";
 import { authRouter } from "./routes/auth.js";
+import { adminRouter } from "./routes/admin.js";
 import { teachersRouter } from "./routes/teachers.js";
 import { classesRouter, subjectsRouter } from "./routes/classes.js";
 import { studentsRouter } from "./routes/students.js";
@@ -63,15 +65,16 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "scholaris-api", time: new Date().toISOString() });
 });
 
-app.use("/api/auth", authRouter);
-app.use("/api/dashboard", authenticate, dashboardRouter);
-app.use("/api/students", authenticate, studentsRouter);
-app.use("/api/teachers", authenticate, teachersRouter);
-app.use("/api/classes", authenticate, classesRouter);
-app.use("/api/subjects", authenticate, subjectsRouter);
-app.use("/api/attendance", authenticate, attendanceRouter);
-app.use("/api/exams", authenticate, examsRouter);
-app.use("/api/reports", authenticate, reportsRouter);
+app.use("/api/auth", csrfGuard, authRouter);
+app.use("/api/admin", csrfGuard, authenticate, adminRouter);
+app.use("/api/dashboard", csrfGuard, authenticate, requireStaff, dashboardRouter);
+app.use("/api/students", csrfGuard, authenticate, requireStaff, studentsRouter);
+app.use("/api/teachers", csrfGuard, authenticate, requireStaff, teachersRouter);
+app.use("/api/classes", csrfGuard, authenticate, requireStaff, classesRouter);
+app.use("/api/subjects", csrfGuard, authenticate, requireStaff, subjectsRouter);
+app.use("/api/attendance", csrfGuard, authenticate, requireStaff, attendanceRouter);
+app.use("/api/exams", csrfGuard, authenticate, requireStaff, examsRouter);
+app.use("/api/reports", csrfGuard, authenticate, requireStaff, reportsRouter);
 
 app.use("/api", notFoundHandler);
 

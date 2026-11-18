@@ -1,10 +1,18 @@
-export type Role = "SUPER_ADMIN" | "ADMIN" | "TEACHER";
+export type Role = "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT";
+export type AccountStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
 
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   role: Role;
+  status?: AccountStatus;
+  emailVerified?: boolean;
+  emailVerifiedAt?: string | null;
+  requestedRole?: Role | null;
+  pendingEmail?: string | null;
+  lastLoginAt?: string | null;
   teacherId: string | null;
 }
 

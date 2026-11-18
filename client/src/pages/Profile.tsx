@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BadgeCheck,
   BookOpen,
@@ -7,6 +7,7 @@ import {
   Check,
   ClipboardList,
   GraduationCap,
+  KeyRound,
   LogOut,
   Mail,
   ShieldCheck,
@@ -15,9 +16,9 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { roleLabel } from "@/lib/utils";
+import { accountStatusLabel, accountStatusTone, isStaffRole, roleLabel } from "@/lib/utils";
 import { Avatar, Badge, Button, Card, PageHeader, SectionHeading } from "@/components/ui";
-import { ChangePasswordCard } from "@/components/account/change-password-card";
+import { EditProfileCard } from "@/components/account/edit-profile-card";
 
 const adminPermissions = [
   { icon: Users, label: "Student records", detail: "Register, update, and archive students." },
@@ -35,6 +36,12 @@ const teacherPermissions = [
   { icon: Sparkles, label: "Reports", detail: "Review attendance and performance reports." },
 ];
 
+const studentPermissions = [
+  { icon: UserRound, label: "My profile", detail: "Keep your own name and contact details current." },
+  { icon: KeyRound, label: "Account security", detail: "Change your password and sign-in email." },
+  { icon: ShieldCheck, label: "Session control", detail: "Review activity and sign out all devices." },
+];
+
 export default function ProfilePage() {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
@@ -43,7 +50,7 @@ export default function ProfilePage() {
   if (!user) return null;
 
   const label = roleLabel(user.role);
-  const permissions = isAdmin ? adminPermissions : teacherPermissions;
+  const permissions = isAdmin ? adminPermissions : isStaffRole(user.role) ? teacherPermissions : studentPermissions;
 
   const onSignOut = async () => {
     setSigningOut(true);
@@ -89,8 +96,10 @@ export default function ProfilePage() {
 
               <p className="mt-5 text-[13px] leading-6 text-ink-500">
                 {isAdmin
-                  ? "This account holds full administrative authority over the Scholaris workspace, including staff access and published results."
-                  : "This account can work with class attendance, marks for assigned subjects, and school reports."}
+                  ? "This account holds administrative authority over the Scholaris workspace, including user approvals, roles, and published results."
+                  : isStaffRole(user.role)
+                    ? "This account can work with class attendance, marks for assigned subjects, and school reports."
+                    : "This account is limited to your own profile and security settings. Student records are not accessible."}
               </p>
 
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -98,9 +107,10 @@ export default function ProfilePage() {
                   <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
                     Account status
                   </p>
-                  <p className="mt-1 flex items-center gap-1.5 text-[13px] font-semibold text-sage-700">
-                    <span className="h-1.5 w-1.5 rounded-full bg-sage-500" />
-                    Active
+                  <p className="mt-1">
+                    <Badge variant={accountStatusTone(user.status)} dot>
+                      {accountStatusLabel(user.status)}
+                    </Badge>
                   </p>
                 </div>
                 <div className="rounded-xl border border-line bg-paper/60 px-3.5 py-3">
@@ -119,7 +129,9 @@ export default function ProfilePage() {
               description={
                 isAdmin
                   ? "Administrator functions are enforced by the API, not just hidden in the interface."
-                  : "Your teacher workspace is limited to the functions below."
+                  : isStaffRole(user.role)
+                    ? "Your teacher workspace is limited to the functions below."
+                    : "Your account is limited to the personal settings below."
               }
             />
             <ul className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -189,7 +201,25 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          <ChangePasswordCard />
+          <Card className="p-6">
+            <SectionHeading
+              title="Security settings"
+              description="Change your password, update your sign-in email, and revoke sessions."
+            />
+            <p className="mt-3 text-[12px] leading-5 text-ink-400">
+              Email changes are confirmed from the new inbox before they take effect. Password
+              changes require your current password and invalidate older sessions.
+            </p>
+            <Link
+              to="/security"
+              className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-ink-950 px-4 text-[13px] font-semibold text-white transition hover:bg-ink-900"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Open security settings
+            </Link>
+          </Card>
+
+          <EditProfileCard />
         </div>
       </div>
     </div>

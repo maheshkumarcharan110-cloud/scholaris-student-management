@@ -4,11 +4,13 @@ import { Prisma } from "@prisma/client";
 
 export class ApiError extends Error {
   status: number;
+  code?: string;
   details?: unknown;
 
-  constructor(status: number, message: string, details?: unknown) {
+  constructor(status: number, message: string, details?: unknown, code?: string) {
     super(message);
     this.status = status;
+    this.code = code;
     this.details = details;
   }
 }
@@ -30,7 +32,7 @@ export function errorHandler(
   _next: NextFunction,
 ) {
   if (err instanceof ApiError) {
-    res.status(err.status).json({ message: err.message, details: err.details });
+    res.status(err.status).json({ message: err.message, code: err.code, details: err.details });
     return;
   }
 

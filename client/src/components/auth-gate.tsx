@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { isAdminRole } from "@/lib/utils";
+import { isAdminRole, isStaffRole } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 export function FullScreenLoader({ label = "Opening your workspace…" }: { label?: string }) {
@@ -32,4 +32,17 @@ export function AdminRoute({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   if (!isAdminRole(user?.role)) return <Navigate to="/" replace />;
   return <>{children}</>;
+}
+
+export function SuperAdminRoute({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role !== "SUPER_ADMIN") return <Navigate to="/admin" replace />;
+  return <>{children}</>;
+}
+
+/** Blocks students from the staff workspace even when they type a URL directly. */
+export function StaffRoute() {
+  const { user } = useAuth();
+  if (!isStaffRole(user?.role)) return <Navigate to="/profile" replace />;
+  return <Outlet />;
 }
