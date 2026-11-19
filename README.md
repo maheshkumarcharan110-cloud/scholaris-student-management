@@ -284,9 +284,9 @@ NODE_ENV=production npm start
 | `SMTP_USER` / `SMTP_PASS` / `MAIL_FROM` | mailbox credentials / `Scholaris <no-reply@example.com>` | Optional sender identity |
 | `ADMIN_NAME` | `Mahesh Kumar` | Administrator display name |
 | `ADMIN_EMAIL` | `admin@scholaris.edu` | Administrator sign-in email |
-| `ADMIN_PASSWORD` | strong secret | Used once to provision the account; keep it in the host's secret store |
+| `ADMIN_PASSWORD` | strong secret | Used only on the first start to create the administrator; keep it in the host's secret store |
 
-Production startup fails fast if `CLIENT_ORIGIN` is missing, is a localhost URL, or is not HTTPS. `ALLOW_LOCALHOST_ORIGIN=true` exists only for a local production smoke test.
+Production startup fails fast if `CLIENT_ORIGIN` resolves to localhost or is not HTTPS. On Render, `CLIENT_ORIGIN` and `APP_URL` default to `RENDER_EXTERNAL_URL`; on other hosts set them explicitly. `ALLOW_LOCALHOST_ORIGIN=true` exists only for a local production smoke test.
 
 ### Deploying
 
@@ -296,9 +296,20 @@ The repository includes a `Dockerfile` and a `render.yaml` blueprint for a singl
 
 1. Create the service (Render, Railway, Fly.io, or any Docker host) and attach a persistent disk for the SQLite file, or provision PostgreSQL and update `server/prisma/schema.prisma`.
 2. Set the environment variables above in the host's secret manager. Never commit `.env`.
-3. Run migrations during release: `npm run db:deploy`.
-4. Provision the administrator once: `npm run db:bootstrap-admin`.
-5. Set `CLIENT_ORIGIN` and `APP_URL` to the final HTTPS URL before the first production start.
+3. On first start the container runs `npm run db:deploy` and `npm run db:ensure-admin`. The administrator is created only when none exists, so restarts never reset an existing password.
+4. Set `CLIENT_ORIGIN` and `APP_URL` only for a custom domain or a non-Render host; Render supplies `RENDER_EXTERNAL_URL` automatically.
+5. Optional: seed demo data once from the host shell with `npm run db:seed` (destructive; use only on a demo database).
+
+### Render
+
+1. Create a Render account and connect the GitHub repository.
+2. Choose **New → Blueprint** and select `scholaris-student-management`. `render.yaml` creates a Starter Docker web service with a 1 GB persistent disk mounted at `/data`.
+3. When prompted, set `ADMIN_EMAIL` and a strong `ADMIN_PASSWORD`; they are used only for the first boot. Adjust `ADMIN_NAME` if desired.
+4. Deploy. The stable URL is `https://<service>.onrender.com`; HTTPS, `CLIENT_ORIGIN`, and `APP_URL` are handled automatically from `RENDER_EXTERNAL_URL`.
+5. After the first successful deploy, remove `ADMIN_PASSWORD` from the Render environment if you do not want it stored. Existing administrator credentials are never reset.
+6. For a custom domain, add it in Render and set `CLIENT_ORIGIN` and `APP_URL` to the custom HTTPS origin.
+
+Render's free tier does not support persistent disks, so the SQLite setup requires the Starter plan (about $7/month). For a free deployment, use a managed PostgreSQL database and change the Prisma provider.
 
 When the API and SPA share an origin, leave `VITE_API_URL` empty so the client calls `/api` directly. Set it only when the API is hosted separately, for example `VITE_API_URL=https://scholaris-api.example.com/api`.
 
@@ -321,6 +332,7 @@ SQLite on a single instance is fine for a small school. For multiple instances o
 | `npm run db:deploy` | Apply committed migrations in production |
 | `npm run db:seed` | Load demo data and provision the administrator |
 | `npm run db:bootstrap-admin` | Create, update, or promote the administrator safely |
+| `npm run db:ensure-admin` | Create the first administrator only if none exists (used on container start) |
 | `npm run db:reset` | Drop, re-migrate, and re-seed the database |
 | `npm run db:studio` | Open Prisma Studio |
 

@@ -7,6 +7,11 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 // Works from both src/ (tsx) and dist/ (compiled)
 dotenv.config({ path: path.resolve(currentDir, "../.env") });
 
+// Render sets this to the service's public HTTPS origin. Using it as the
+// default avoids a chicken-and-egg deploy where the URL is only known after
+// the first deploy.
+const renderExternalUrl = process.env.RENDER_EXTERNAL_URL?.trim().replace(/\/+$/, "");
+
 const bool = (fallback = false) =>
   z
     .string()
@@ -19,7 +24,7 @@ const envSchema = z
     PORT: z.coerce.number().int().positive().default(4000),
     HOST: z.string().min(1).default("0.0.0.0"),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    CLIENT_ORIGIN: z.string().default("http://localhost:5173"),
+    CLIENT_ORIGIN: z.string().default(renderExternalUrl || "http://localhost:5173"),
     APP_URL: z.string().url().optional(),
     JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
     JWT_EXPIRES_IN: z.string().default("8h"),
@@ -109,7 +114,7 @@ export const env = {
   isProduction: parsed.data.NODE_ENV === "production",
   isTest: parsed.data.NODE_ENV === "test",
   allowedOrigins,
-  appUrl: (parsed.data.APP_URL ?? allowedOrigins[0] ?? "http://localhost:5173").replace(/\/$/, ""),
+  appUrl: (parsed.data.APP_URL ?? renderExternalUrl ?? allowedOrigins[0] ?? "http://localhost:5173").replace(/\/$/, ""),
   smtpConfigured: Boolean(parsed.data.SMTP_HOST),
   // Verification/reset links are only returned by the API outside production.
   exposeDevEmailLinks: parsed.data.NODE_ENV !== "production",

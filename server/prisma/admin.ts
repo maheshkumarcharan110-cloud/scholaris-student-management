@@ -62,12 +62,12 @@ export async function ensureAdmin(prisma: PrismaClient) {
   let created = false;
 
   if (!admin) {
-    generatedPassword = config.password ?? crypto.randomBytes(18).toString("base64url");
+    const password = config.password ?? crypto.randomBytes(18).toString("base64url");
     admin = await prisma.user.create({
       data: {
         name: config.name,
         email: config.email,
-        passwordHash: await bcrypt.hash(generatedPassword, 12),
+        passwordHash: await bcrypt.hash(password, 12),
         role: "SUPER_ADMIN",
         status: "APPROVED",
         active: true,
@@ -76,7 +76,11 @@ export async function ensureAdmin(prisma: PrismaClient) {
       },
     });
     created = true;
-    if (!config.password) writeCredentialsFile(config.email, generatedPassword, config.name);
+    if (!config.password) {
+      // Only a randomly generated password needs to be handed back out of band.
+      generatedPassword = password;
+      writeCredentialsFile(config.email, password, config.name);
+    }
   } else {
     const data: {
       name: string;

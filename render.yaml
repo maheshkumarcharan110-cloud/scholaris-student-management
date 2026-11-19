@@ -30,12 +30,12 @@ services:
         value: 8h
       - key: COOKIE_SECURE
         value: "true"
-      # Replace with the final HTTPS origin after the service is created.
-      - key: CLIENT_ORIGIN
-        sync: false
-      # Public base URL used in verification and password-reset links.
-      - key: APP_URL
-        sync: false
+      # CLIENT_ORIGIN and APP_URL default to Render's RENDER_EXTERNAL_URL.
+      # Uncomment these only when using a custom domain.
+      # - key: CLIENT_ORIGIN
+      #   sync: false
+      # - key: APP_URL
+      #   sync: false
       # Administrator approval is always required. Email verification is
       # optional and stays off until SMTP is configured.
       - key: REQUIRE_EMAIL_VERIFICATION
@@ -59,6 +59,9 @@ services:
       #   sync: false
       - key: ADMIN_NAME
         value: Mahesh Kumar
+      # ADMIN_EMAIL and ADMIN_PASSWORD are used only on the first container
+      # start, when no administrator exists yet. Remove ADMIN_PASSWORD from
+      # the dashboard after the first successful deploy if desired.
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
